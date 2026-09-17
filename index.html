@@ -3,91 +3,198 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pinagsabangan Weather & Road Portal</title>
+  <title>Pinagsabangan Weather Station</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 p-4 md:p-8">
+<body class="bg-[#12161f] text-slate-100 min-h-screen p-4 md:p-6 font-sans">
 
-  <div class="max-w-4xl mx-auto space-y-6">
+  <div class="max-w-7xl mx-auto space-y-6">
     <!-- Header -->
-    <header class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-      <h1 class="text-2xl font-bold text-slate-900">Pinagsabangan Weather & Road Monitor</h1>
-      <p class="text-xs text-slate-500 mt-1">Live updates from local station • Refreshes every 30s</p>
-    </header>
+    <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+      <div>
+        <h1 class="text-xl font-bold text-slate-100">Pinagsabangan Weather Station</h1>
+        <p id="updated-at" class="text-xs text-slate-400 mt-1">Reported -- ago</p>
+      </div>
+      <div class="text-right">
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
+          ● Live Online
+        </span>
+      </div>
+    </div>
 
-    <!-- Weather Cards Grid -->
-    <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-        <span class="text-xs font-semibold text-slate-400">TEMPERATURE</span>
-        <p id="temp" class="text-2xl font-bold text-slate-800 mt-2">-- °C</p>
+    <!-- Grid Container matching Ecowitt Tile Layout -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Outdoor -->
+      <div class="bg-[#1b212d] p-5 rounded-xl border border-slate-800 space-y-4">
+        <h2 class="text-sm font-semibold text-slate-400 border-b border-slate-800 pb-2">Outdoor</h2>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <span class="text-xs text-slate-400">Temperature</span>
+            <p id="temp" class="text-3xl font-bold mt-1">-- °C</p>
+            <p id="feels-like" class="text-xs text-amber-500 mt-2">Feels Like -- °C</p>
+          </div>
+          <div>
+            <span class="text-xs text-slate-400">Humidity</span>
+            <p id="humidity" class="text-3xl font-bold mt-1">-- %</p>
+            <p id="dew-point" class="text-xs text-cyan-400 mt-2">Dew Point -- °C</p>
+          </div>
+        </div>
       </div>
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-        <span class="text-xs font-semibold text-slate-400">RAIN RATE</span>
-        <p id="rain" class="text-2xl font-bold text-blue-600 mt-2">-- mm/h</p>
-      </div>
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-        <span class="text-xs font-semibold text-slate-400">WIND SPEED</span>
-        <p id="wind" class="text-2xl font-bold text-slate-800 mt-2">-- km/h</p>
-      </div>
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-        <span class="text-xs font-semibold text-slate-400">HUMIDITY</span>
-        <p id="humidity" class="text-2xl font-bold text-slate-800 mt-2">-- %</p>
-      </div>
-    </section>
 
-    <!-- Road Conditions Table -->
-    <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-      <h2 class="text-lg font-bold text-slate-800">Road Passability Status</h2>
-      <div id="roads-container" class="divide-y divide-slate-100">
-        <p class="text-sm text-slate-400 py-2">Loading road conditions...</p>
+      <!-- Indoor -->
+      <div class="bg-[#1b212d] p-5 rounded-xl border border-slate-800 space-y-4">
+        <h2 class="text-sm font-semibold text-slate-400 border-b border-slate-800 pb-2">Indoor</h2>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <span class="text-xs text-slate-400">Temperature</span>
+            <p id="indoor-temp" class="text-3xl font-bold mt-1">-- °C</p>
+          </div>
+          <div>
+            <span class="text-xs text-slate-400">Humidity</span>
+            <p id="indoor-humidity" class="text-3xl font-bold mt-1">-- %</p>
+          </div>
+        </div>
       </div>
-    </section>
+
+      <!-- Solar and UVI -->
+      <div class="bg-[#1b212d] p-5 rounded-xl border border-slate-800 space-y-4">
+        <h2 class="text-sm font-semibold text-slate-400 border-b border-slate-800 pb-2">Solar and UVI</h2>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <span class="text-xs text-slate-400">Solar</span>
+            <p id="solar" class="text-3xl font-bold mt-1">-- <span class="text-xs font-normal">W/m²</span></p>
+          </div>
+          <div>
+            <span class="text-xs text-slate-400">UVI</span>
+            <p id="uvi" class="text-3xl font-bold mt-1">--</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rainfall -->
+      <div class="bg-[#1b212d] p-5 rounded-xl border border-slate-800 space-y-4">
+        <h2 class="text-sm font-semibold text-slate-400 border-b border-slate-800 pb-2">Rainfall</h2>
+        <div class="flex justify-between items-baseline">
+          <div>
+            <span class="text-xs text-slate-400">Rain Rate /hr</span>
+            <p id="rain-rate" class="text-3xl font-bold mt-1 text-blue-400">0.0 <span class="text-xs font-normal">mm</span></p>
+          </div>
+          <div class="text-right text-xs space-y-1 text-slate-400">
+            <p>Daily: <span id="rain-daily" class="text-slate-200 font-semibold">0.0 mm</span></p>
+            <p>Event: <span id="rain-event" class="text-slate-200 font-semibold">0.0 mm</span></p>
+            <p>Monthly: <span id="rain-monthly" class="text-slate-200 font-semibold">0.0 mm</span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wind -->
+      <div class="bg-[#1b212d] p-5 rounded-xl border border-slate-800 space-y-4">
+        <h2 class="text-sm font-semibold text-slate-400 border-b border-slate-800 pb-2">Wind</h2>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <span class="text-xs text-slate-400">Speed</span>
+            <p id="wind-speed" class="text-3xl font-bold mt-1">-- <span class="text-xs font-normal">km/h</span></p>
+            <p id="wind-dir" class="text-xs text-cyan-400 mt-2">Dir: --°</p>
+          </div>
+          <div>
+            <span class="text-xs text-slate-400">Gust</span>
+            <p id="wind-gust" class="text-3xl font-bold mt-1">-- <span class="text-xs font-normal">km/h</span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pressure -->
+      <div class="bg-[#1b212d] p-5 rounded-xl border border-slate-800 space-y-4">
+        <h2 class="text-sm font-semibold text-slate-400 border-b border-slate-800 pb-2">Pressure</h2>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <span class="text-xs text-slate-400">Relative</span>
+            <p id="pressure-rel" class="text-2xl font-bold mt-1">-- <span class="text-xs font-normal">hPa</span></p>
+          </div>
+          <div>
+            <span class="text-xs text-slate-400">Absolute</span>
+            <p id="pressure-abs" class="text-2xl font-bold mt-1">-- <span class="text-xs font-normal">hPa</span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Battery -->
+      <div class="bg-[#1b212d] p-5 rounded-xl border border-slate-800 space-y-4">
+        <h2 class="text-sm font-semibold text-slate-400 border-b border-slate-800 pb-2">Battery Status</h2>
+        <div class="flex items-center justify-between py-2">
+          <span class="text-sm font-medium text-slate-300">Sensor Array</span>
+          <span id="bat-sensor" class="px-2.5 py-1 rounded text-xs font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">
+            NORMAL
+          </span>
+        </div>
+      </div>
+
+      <!-- Road Status -->
+      <div class="bg-[#1b212d] p-5 rounded-xl border border-slate-800 space-y-4">
+        <h2 class="text-sm font-semibold text-slate-400 border-b border-slate-800 pb-2">Road Passability</h2>
+        <div id="roads-container" class="space-y-2 text-xs">
+          <p class="text-slate-500">Loading road conditions...</p>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <script>
     async function loadData() {
       try {
-        // Fetch Live Weather
         const wRes = await fetch('/api/weather');
         const weather = await wRes.json();
         
         if (weather.success && weather.data) {
           const d = weather.data;
           document.getElementById('temp').innerText = `${d.temp_c ?? '--'} °C`;
-          document.getElementById('rain').innerText = `${d.rain_rate_mm ?? '0'} mm/h`;
-          document.getElementById('wind').innerText = `${d.wind_speed_kmh ?? '--'} km/h`;
           document.getElementById('humidity').innerText = `${d.humidity ?? '--'} %`;
+          document.getElementById('feels-like').innerText = `Feels Like ${d.feels_like_c ?? '--'} °C`;
+          document.getElementById('dew-point').innerText = `Dew Point ${d.dew_point_c ?? '--'} °C`;
+          
+          document.getElementById('indoor-temp').innerText = `${d.indoor_temp_c ?? '--'} °C`;
+          document.getElementById('indoor-humidity').innerText = `${d.indoor_humidity ?? '--'} %`;
+          
+          document.getElementById('solar').innerHTML = `${d.solar_w_m2 ?? '--'} <span class="text-xs font-normal">W/m²</span>`;
+          document.getElementById('uvi').innerText = d.uvi ?? '--';
+          
+          document.getElementById('rain-rate').innerHTML = `${d.rain_rate_mm ?? '0.0'} <span class="text-xs font-normal">mm</span>`;
+          document.getElementById('rain-daily').innerText = `${d.daily_rain_mm ?? '0.0'} mm`;
+          document.getElementById('rain-event').innerText = `${d.event_rain_mm ?? '0.0'} mm`;
+          document.getElementById('rain-monthly').innerText = `${d.monthly_rain_mm ?? '0.0'} mm`;
+          
+          document.getElementById('wind-speed').innerHTML = `${d.wind_speed_kmh ?? '--'} <span class="text-xs font-normal">km/h</span>`;
+          document.getElementById('wind-gust').innerHTML = `${d.wind_gust_kmh ?? '--'} <span class="text-xs font-normal">km/h</span>`;
+          document.getElementById('wind-dir').innerText = `Dir: ${d.wind_dir ?? '--'}°`;
+          
+          document.getElementById('pressure-rel').innerHTML = `${d.pressure_rel_hpa ?? '--'} <span class="text-xs font-normal">hPa</span>`;
+          document.getElementById('pressure-abs').innerHTML = `${d.pressure_abs_hpa ?? '--'} <span class="text-xs font-normal">hPa</span>`;
+          
+          document.getElementById('updated-at').innerText = `Reported at ${new Date(d.created_at).toLocaleTimeString()}`;
         }
 
-        // Fetch Road Statuses
         const rRes = await fetch('/api/roads');
         const roads = await rRes.json();
-
         if (roads.success && roads.data) {
           const container = document.getElementById('roads-container');
-          container.innerHTML = roads.data.map(road => `
-            <div class="py-3 flex items-center justify-between">
-              <div>
-                <p class="font-semibold text-slate-800">${road.road_name}</p>
-                <p class="text-xs text-slate-500">${road.location_description || ''}</p>
-              </div>
-              <span class="px-3 py-1 rounded-full text-xs font-bold ${
-                road.status === 'PASSABLE' ? 'bg-emerald-100 text-emerald-700' :
-                road.status === 'CAUTION' ? 'bg-amber-100 text-amber-700' :
-                'bg-rose-100 text-rose-700'
-              }">
-                ${road.status}
-              </span>
+          container.innerHTML = roads.data.map(r => `
+            <div class="flex justify-between items-center py-1">
+              <span class="text-slate-300 font-medium">${r.road_name}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
+                r.status === 'PASSABLE' ? 'bg-emerald-950 text-emerald-400' : 'bg-rose-950 text-rose-400'
+              }">${r.status}</span>
             </div>
           `).join('');
         }
       } catch (err) {
-        console.error('Failed to load portal data:', err);
+        console.error('Failed to update dashboard:', err);
       }
     }
 
     loadData();
-    setInterval(loadData, 30000); // Auto-refresh every 30 seconds
+    setInterval(loadData, 30000);
   </script>
 </body>
 </html>
