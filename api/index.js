@@ -1,38 +1,113 @@
-// Add these additional conversions and fields inside fetchAndStoreWeather() in api/index.js
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import { createClient } from '@supabase/supabase-js';
 
-const record = {
-  // Outdoor
-  temp_c: fToC(data.outdoor?.temperature?.value),
-  humidity: data.outdoor?.humidity?.value ? parseInt(data.outdoor.humidity.value) : null,
-  feels_like_c: fToC(data.outdoor?.feels_like?.value),
-  dew_point_c: fToC(data.outdoor?.dew_point?.value),
-  
-  // Indoor
-  indoor_temp_c: fToC(data.indoor?.temperature?.value),
-  indoor_humidity: data.indoor?.humidity?.value ? parseInt(data.indoor.humidity.value) : null,
-  
-  // Solar & UVI
-  solar_w_m2: data.solar_and_uvi?.solar_radiation?.value ? parseFloat(data.solar_and_uvi.solar_radiation.value) : null,
-  uvi: data.solar_and_uvi?.uvi?.value ? parseInt(data.solar_and_uvi.uvi.value) : null,
-  
-  // Rainfall
-  rain_rate_mm: inToMm(data.rainfall?.rain_rate?.value),
-  daily_rain_mm: inToMm(data.rainfall?.daily?.value),
-  event_rain_mm: inToMm(data.rainfall?.event?.value),
-  hourly_rain_mm: inToMm(data.rainfall?.hourly?.value),
-  weekly_rain_mm: inToMm(data.rainfall?.weekly?.value),
-  monthly_rain_mm: inToMm(data.rainfall?.monthly?.value),
-  yearly_rain_mm: inToMm(data.rainfall?.yearly?.value),
-  
-  // Wind
-  wind_speed_kmh: mphToKmh(data.wind?.wind_speed?.value),
-  wind_gust_kmh: mphToKmh(data.wind?.gust?.value),
-  wind_dir: data.wind?.wind_direction?.value ? parseInt(data.wind.wind_direction.value) : null,
-  
-  // Pressure
-  pressure_rel_hpa: inHgToHpa(data.pressure?.relative?.value),
-  pressure_abs_hpa: inHgToHpa(data.pressure?.absolute?.value),
-  
-  // Battery Status
-  battery_sensor_array: data.battery?.sensor_array?.value || 'Normal'
-};
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json());
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
+
+async function fetchAndStoreWeather() {
+  const APP_KEY = process.env.ECOWITT_APP_KEY;
+  const API_KEY = process.env.ECOWITT_API_KEY;
+  const MAC = process.env.ECOWITT_MAC;
+
+  const url = `https://api.ecowitt.net/api/v3/device/real_time?application_key=${APP_KEY}&api_key=${API_KEY}&mac=${MAC}&call_back=all`;
+
+  const response = await fetch(url);
+  const result = await response.json();
+
+  if (result.code !== 0) throw new Error(result.msg || 'Ecowitt error');
+
+  const data = result.data || {};
+
+  // Converters
+  const fToC = (f) => (f !== undefined && f !== null && !isNaN(f)) ? Number((((parseFloat(f) - 32) * 5) / 9).toFixed(1)) : null;
+  const mphToKmh = (mph) => (mph !== undefined && mph !== null && !isNaN(mph)) ? Number((parseFloat(mph) * 1.60934).toFixed(1)) : null;
+  const inToMm = (inches) => (inches !== undefined && inches !== null && !isNaN(inches)) ? Number((parseFloat(inches) * 25.4).toFixed(1)) : null;
+  const inHgToHpa = (inHg) => (inHg !== undefined && inHg !== null && !isNaN(inHg)) ? Number((parseFloat(inHg) * 33.8639).toFixed(1)) : null;
+
+  const record = {
+    // Outdoor
+    temp_c: fToC(data.outdoor?.temperature?.value),
+    humidity: data.outdoor?.humidity?.value ? parseInt(data.outdoor.humidity.value) : null,
+    feels_like_c: fToC(data.outdoor?.feels_like?.value ?? data.outdoor?.app_temp?.value),
+    dew_point_c: fToC(data.outdoor?.dew_point?.value),
+
+    // Indoor
+    indoor_temp_c: fToC(data.indoor?.temperature?.value),
+    indoor_humidity: data.indoor?.humidity?.value ? parseInt(data.indoor.humidity.value) : null,
+
+    // Solar & UVI
+    solar_w_m2: data.solar_and_uvi?.solar_radiation?.value ? parseFloat(data.solar_and_uvi.solar_radiation.value) : null,
+    uvi: data.solar_and_uvi?.uvi?.value ? parseInt(data.solar_and_uvi.uvi.value) : null,
+
+    // Rainfall
+    rain_rate_mm: inToMm(data.rainfall?.rain_rate?.value),
+    daily_rain_mm: inToMm(data.rainfall?.daily?.value),
+    event_rain_mm: inToMm(data.rainfall?.event?.value),
+    monthly_rain_mm: inToMm(data.rainfall?.monthly?.value),
+
+    // Wind
+    wind_speed_kmh: mphToKmh(data.wind?.wind_speed?.value),
+    wind_gust_kmh: mphToKmh(data.wind?.wind_gust?.value),
+    wind_dir: data.wind?.wind_direction?.value ? parseInt(data.wind.wind_direction.value) : null,
+
+    // Pressure
+    pressure_rel_hpa: inHgToHpa(data.pressure?.relative?.value),
+    pressure_abs_hpa: inHgToHpa(data.pressure?.absolute?.value)
+  };
+
+  const { error } = await supabase.from('weather_logs').insert([record]);
+  if (error) throw error;
+
+  return record;
+}
+
+// Endpoints
+app.get('/api/weather', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('weather_logs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (error) throw error;
+    res.json({ success: true, data: data && data.length > 0 ? data[0] : null });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/roads', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('road_segments').select('*');
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/cron/fetch-weather', async (req, res) => {
+  try {
+    const newRecord = await fetchAndStoreWeather();
+    res.json({ success: true, message: 'Saved to Supabase', data: newRecord });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+export default app;
+
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+}
