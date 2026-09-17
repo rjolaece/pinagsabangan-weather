@@ -145,11 +145,11 @@
         </div>
       </div>
 
-      <!-- Rainfall Card with Dynamic Background Image (70% Transparency / 30% Opacity) -->
+      <!-- Rainfall Card with Dynamic Animated GIF Background -->
       <div id="rain-card" class="relative overflow-hidden p-6 rounded-3xl bg-gradient-to-b from-slate-900/80 to-slate-950/60 border border-white/5 backdrop-blur-xl shadow-xl space-y-5 hover:border-blue-500/30 transition-all duration-300">
         
-        <!-- Dynamic Background Layer with 70% Transparency (0.3 opacity) -->
-        <div id="rain-bg-layer" class="absolute inset-0 bg-cover bg-center transition-all duration-700 opacity-30 pointer-events-none" style="background-image: url('https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?q=80&w=600&auto=format&fit=crop');"></div>
+        <!-- Dynamic Background Layer (30% opacity / 70% transparency) -->
+        <div id="rain-bg-layer" class="absolute inset-0 bg-cover bg-center transition-all duration-700 opacity-30 pointer-events-none"></div>
         <div class="absolute inset-0 bg-gradient-to-b from-[#070a12]/80 via-[#070a12]/60 to-[#070a12]/85 pointer-events-none"></div>
 
         <div class="relative z-10 flex items-center justify-between border-b border-white/5 pb-4">
@@ -197,37 +197,26 @@
             <g fill="#64748b" font-size="10" font-weight="600" text-anchor="middle">
               <line x1="120" y1="25" x2="120" y2="33" stroke="#22d3ee" stroke-width="2" />
               <text x="120" y="47">0</text>
-
               <line x1="167" y1="38" x2="163" y2="45" stroke="#334155" stroke-width="1.5" />
               <text x="160" y="59">30</text>
-
               <line x1="202" y1="73" x2="195" y2="77" stroke="#334155" stroke-width="1.5" />
               <text x="187" y="86">60</text>
-
               <line x1="215" y1="120" x2="207" y2="120" stroke="#22d3ee" stroke-width="2" />
               <text x="194" y="123">90</text>
-
               <line x1="202" y1="167" x2="195" y2="163" stroke="#334155" stroke-width="1.5" />
               <text x="187" y="160">120</text>
-
               <line x1="167" y1="202" x2="163" y2="195" stroke="#334155" stroke-width="1.5" />
               <text x="160" y="187">150</text>
-
               <line x1="120" y1="215" x2="120" y2="207" stroke="#22d3ee" stroke-width="2" />
               <text x="120" y="198">180</text>
-
               <line x1="73" y1="202" x2="77" y2="195" stroke="#334155" stroke-width="1.5" />
               <text x="80" y="187">210</text>
-
               <line x1="38" y1="167" x2="45" y2="163" stroke="#334155" stroke-width="1.5" />
               <text x="53" y="160">240</text>
-
               <line x1="25" y1="120" x2="33" y2="120" stroke="#22d3ee" stroke-width="2" />
               <text x="46" y="123">270</text>
-
               <line x1="38" y1="73" x2="45" y2="77" stroke="#334155" stroke-width="1.5" />
               <text x="53" y="86">300</text>
-
               <line x1="73" y1="38" x2="77" y2="45" stroke="#334155" stroke-width="1.5" />
               <text x="80" y="59">330</text>
             </g>
@@ -330,46 +319,7 @@
       const index = Math.round((deg % 360) / 22.5) % 16;
       return directions[index];
     }
-function updateDynamicRainfallBackground(rainRate) {
-  const rate = parseFloat(rainRate) || 0;
-  const bgLayer = document.getElementById('rain-bg-layer');
-  const badgeEl = document.getElementById('rain-status-badge');
-  if (!bgLayer) return;
 
-  let gifUrl = '';
-  let label = 'Dry';
-  let badgeClass = 'bg-slate-800 text-slate-400 border-slate-700';
-
-  if (rate === 0) {
-    // Dry / Clear Skies GIF
-    gifUrl = 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmFlM2NmZGFiODhhMzQ0MDBhNDkyZDU2MWJmYWU4ZGNlZDA5ZjA3ZiZlcD12MV9pbnRlcm5hbF9naWZfaWQmY3Q9Zw/3o7TKrEzvLbsVAud8I/giphy.gif';
-    label = 'Dry';
-  } else if (rate > 0 && rate < 2.5) {
-    // Light Rain / Drizzle GIF
-    gifUrl = 'https://media.giphy.com/media/t7a3P9eB9dYgY4T8bL/giphy.gif';
-    label = 'Light Rain';
-    badgeClass = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-  } else if (rate >= 2.5 && rate < 7.6) {
-    // Moderate Rain GIF
-    gifUrl = 'https://media.giphy.com/media/l0HlPwMA32z8y9NEA/giphy.gif';
-    label = 'Moderate Rain';
-    badgeClass = 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
-  } else {
-    // Heavy Storm / Downpour GIF
-    gifUrl = 'https://media.giphy.com/media/13fI2K0Fh9pZrq/giphy.gif';
-    label = 'Heavy Rain';
-    badgeClass = 'bg-indigo-500/20 text-indigo-300 border-indigo-400/30';
-  }
-
-  // Set animated GIF background and maintain 70% transparency
-  bgLayer.style.backgroundImage = `url('${gifUrl}')`;
-  bgLayer.style.opacity = '0.3';
-
-  if (badgeEl) {
-    badgeEl.innerText = label;
-    badgeEl.className = `px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${badgeClass}`;
-  }
-}
     function updateUVGauge(uvi) {
       const val = parseFloat(uvi) || 0;
       const maxVal = 12;
@@ -419,29 +369,29 @@ function updateDynamicRainfallBackground(rainRate) {
       const badgeEl = document.getElementById('rain-status-badge');
       if (!bgLayer) return;
 
-      let imageUrl = 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?q=80&w=600&auto=format&fit=crop'; // Default Drizzle/Moisture
+      let gifUrl = '';
       let label = 'Dry';
       let badgeClass = 'bg-slate-800 text-slate-400 border-slate-700';
 
-      if (rate > 0 && rate < 2.5) {
-        // Light Rain / Drizzle
-        imageUrl = 'https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?q=80&w=600&auto=format&fit=crop';
+      if (rate === 0) {
+        gifUrl = 'https://media.giphy.com/media/3o7TKrEzvLbsVAud8I/giphy.gif';
+        label = 'Dry';
+      } else if (rate > 0 && rate < 2.5) {
+        gifUrl = 'https://media.giphy.com/media/t7a3P9eB9dYgY4T8bL/giphy.gif';
         label = 'Light Rain';
         badgeClass = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
       } else if (rate >= 2.5 && rate < 7.6) {
-        // Moderate Rain
-        imageUrl = 'https://images.unsplash.com/photo-1519692933481-e162a57d6721?q=80&w=600&auto=format&fit=crop';
+        gifUrl = 'https://media.giphy.com/media/l0HlPwMA32z8y9NEA/giphy.gif';
         label = 'Moderate Rain';
         badgeClass = 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
-      } else if (rate >= 7.6) {
-        // Heavy Storm / Downpour
-        imageUrl = 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?q=80&w=600&auto=format&fit=crop';
+      } else {
+        gifUrl = 'https://media.giphy.com/media/13fI2K0Fh9pZrq/giphy.gif';
         label = 'Heavy Rain';
         badgeClass = 'bg-indigo-500/20 text-indigo-300 border-indigo-400/30';
       }
 
-      bgLayer.style.backgroundImage = `url('${imageUrl}')`;
-      bgLayer.style.opacity = '0.3'; // Exactly 70% transparency (30% visibility)
+      bgLayer.style.backgroundImage = `url('${gifUrl}')`;
+      bgLayer.style.opacity = '0.3';
 
       if (badgeEl) {
         badgeEl.innerText = label;
@@ -470,7 +420,6 @@ function updateDynamicRainfallBackground(rainRate) {
           document.getElementById('uvi').innerText = fmt(d.uvi ?? 0);
           updateUVGauge(d.uvi ?? 0);
 
-          // Update Rainfall Readout and Dynamic Background
           const rainRate = d.rain_rate_mm ?? 0;
           document.getElementById('rain-rate').innerHTML = `${fmt(rainRate)} <span class="text-xs font-normal text-slate-500">mm/h</span>`;
           document.getElementById('rain-event').innerText = fmt(d.event_rain_mm ?? 0, ' mm');
@@ -478,7 +427,6 @@ function updateDynamicRainfallBackground(rainRate) {
           document.getElementById('rain-monthly').innerText = fmt(d.monthly_rain_mm ?? 0, ' mm');
           updateDynamicRainfallBackground(rainRate);
           
-          // Wind Vector Updates
           document.getElementById('wind-speed').innerText = d.wind_speed_kmh !== null ? d.wind_speed_kmh : '0';
           document.getElementById('wind-gust').innerText = fmt(d.wind_gust_kmh, ' km/h');
           
