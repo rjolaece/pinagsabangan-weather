@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/index.js" }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/fetch-weather",
+      "schedule": "*/10 * * * *"
+    }
+  ]
+}

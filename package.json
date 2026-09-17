@@ -1,0 +1,16 @@
+{
+  "name": "pinagsabangan-weather",
+  "version": "1.0.0",
+  "description": "Weather and road statistics portal for Pinagsabangan",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  }
+}

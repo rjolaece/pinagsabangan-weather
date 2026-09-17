@@ -1,0 +1,17 @@
+# Secret Keys & Environment Variables (NEVER push to GitHub)
+.env
+.env.local
+
+# Dependency Packages (Rebuilt automatically by Vercel)
+node_modules/
+
+# Vercel deployment cache
+.vercel/
+
+# System / Operating System Garbage
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+npm-debug.log*
