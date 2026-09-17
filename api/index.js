@@ -9,13 +9,38 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Initialize Supabase Client
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_KEY
 );
 
+/* ==========================================================================
+   CONVERSION HELPER FUNCTIONS (Imperial -> Metric)
+   ========================================================================== */
+
+// Fahrenheit to Celsius
+const fToC = (f) => (f !== null && f !== undefined && !isNaN(f)) 
+  ? Number((((parseFloat(f) - 32) * 5) / 9).toFixed(1)) 
+  : null;
+
+// Inches of Mercury (inHg) to Hectopascals (hPa)
+const inHgToHpa = (inHg) => (inHg !== null && inHg !== undefined && !isNaN(inHg)) 
+  ? Number((parseFloat(inHg) * 33.8639).toFixed(1)) 
+  : null;
+
+// Miles per hour (mph) to Kilometers per hour (km/h)
+const mphToKmh = (mph) => (mph !== null && mph !== undefined && !isNaN(mph)) 
+  ? Number((parseFloat(mph) * 1.60934).toFixed(1)) 
+  : null;
+
+// Inches to Millimeters (mm)
+const inToMm = (inches) => (inches !== null && inches !== undefined && !isNaN(inches)) 
+  ? Number((parseFloat(inches) * 25.4).toFixed(1)) 
+  : null;
+
 /**
- * Calculates Dew Point in °C from Temperature (°C) and Humidity (%)
+ * Fallback: Calculates Dew Point in °C from Temperature (°C) and Humidity (%)
  */
 function calcDewPoint(tempC, humidity) {
   if (tempC == null || humidity == null) return null;
@@ -26,7 +51,7 @@ function calcDewPoint(tempC, humidity) {
 }
 
 /**
- * Calculates Heat Index / Feels Like in °C
+ * Fallback: Calculates Heat Index / Feels Like in °C
  */
 function calcFeelsLike(tempC, humidity) {
   if (tempC == null) return null;
@@ -47,6 +72,10 @@ function calcFeelsLike(tempC, humidity) {
   return Number(hi.toFixed(1));
 }
 
+/**
+ * Primary Core Handler: Fetches real-time payload from Ecowitt Cloud API,
+ * converts all units to Metric, and inserts record into Supabase.
+ */
 async function fetchAndStoreWeather() {
   const APP_KEY = process.env.ECOWITT_APP_KEY;
   const API_KEY = process.env.ECOWITT_API_KEY;
@@ -57,63 +86,74 @@ async function fetchAndStoreWeather() {
   const response = await fetch(url);
   const result = await response.json();
 
-  if (result.code !== 0) throw new Error(result.msg || 'Ecowitt API Error');
+  if (result.code !== 0) {
+    throw new Error(result.msg || 'Ecowitt API returned an error');
+  }
 
   const d = result.data || {};
 
-  // Safely extract numeric values (handling unit strings or raw numbers)
-  const getVal = (obj) => {
+  // Extract raw numeric value safely
+  const getRaw = (obj) => {
     if (!obj || obj.value === undefined || obj.value === null) return null;
     const parsed = parseFloat(obj.value);
     return isNaN(parsed) ? null : parsed;
   };
 
-  const tempC = getVal(d.outdoor?.temperature);
-  const humidity = getVal(d.outdoor?.humidity);
-  const indoorTempC = getVal(d.indoor?.temperature);
-  const indoorHumidity = getVal(d.indoor?.humidity);
+  // Convert raw values to metric
+  const rawOutdoorTemp = getRaw(d.outdoor?.temperature);
+  const tempC = fToC(rawOutdoorTemp);
+  const humidity = getRaw(d.outdoor?.humidity);
+
+  const rawIndoorTemp = getRaw(d.indoor?.temperature);
+  const indoorTempC = fToC(rawIndoorTemp);
+  const indoorHumidity = getRaw(d.indoor?.humidity);
 
   const record = {
     // Outdoor
     temp_c: tempC,
     humidity: humidity,
-    feels_like_c: getVal(d.outdoor?.feels_like) ?? calcFeelsLike(tempC, humidity),
-    dew_point_c: getVal(d.outdoor?.dew_point) ?? calcDewPoint(tempC, humidity),
+    feels_like_c: fToC(getRaw(d.outdoor?.feels_like)) ?? calcFeelsLike(tempC, humidity),
+    dew_point_c: fToC(getRaw(d.outdoor?.dew_point)) ?? calcDewPoint(tempC, humidity),
 
     // Indoor
     indoor_temp_c: indoorTempC,
     indoor_humidity: indoorHumidity,
 
     // Solar & UVI
-    solar_w_m2: getVal(d.solar_and_uvi?.solar_radiation),
-    uvi: getVal(d.solar_and_uvi?.uvi),
+    solar_w_m2: getRaw(d.solar_and_uvi?.solar_radiation),
+    uvi: getRaw(d.solar_and_uvi?.uvi),
 
     // Rainfall
-    rain_rate_mm: getVal(d.rainfall?.rain_rate),
-    daily_rain_mm: getVal(d.rainfall?.daily),
-    event_rain_mm: getVal(d.rainfall?.event),
-    hourly_rain_mm: getVal(d.rainfall?.hourly),
-    weekly_rain_mm: getVal(d.rainfall?.weekly),
-    monthly_rain_mm: getVal(d.rainfall?.monthly),
-    yearly_rain_mm: getVal(d.rainfall?.yearly),
+    rain_rate_mm: inToMm(getRaw(d.rainfall?.rain_rate)),
+    daily_rain_mm: inToMm(getRaw(d.rainfall?.daily)),
+    event_rain_mm: inToMm(getRaw(d.rainfall?.event)),
+    hourly_rain_mm: inToMm(getRaw(d.rainfall?.hourly)),
+    weekly_rain_mm: inToMm(getRaw(d.rainfall?.weekly)),
+    monthly_rain_mm: inToMm(getRaw(d.rainfall?.monthly)),
+    yearly_rain_mm: inToMm(getRaw(d.rainfall?.yearly)),
 
     // Wind
-    wind_speed_kmh: getVal(d.wind?.wind_speed),
-    wind_gust_kmh: getVal(d.wind?.wind_gust),
-    wind_dir: getVal(d.wind?.wind_direction),
+    wind_speed_kmh: mphToKmh(getRaw(d.wind?.wind_speed)),
+    wind_gust_kmh: mphToKmh(getRaw(d.wind?.wind_gust)),
+    wind_dir: getRaw(d.wind?.wind_direction),
 
     // Pressure
-    pressure_rel_hpa: getVal(d.pressure?.relative),
-    pressure_abs_hpa: getVal(d.pressure?.absolute)
+    pressure_rel_hpa: inHgToHpa(getRaw(d.pressure?.relative)),
+    pressure_abs_hpa: inHgToHpa(getRaw(d.pressure?.absolute))
   };
 
+  // Insert converted metric record into Supabase
   const { error } = await supabase.from('weather_logs').insert([record]);
   if (error) throw error;
 
   return record;
 }
 
-// Routes
+/* ==========================================================================
+   API ENDPOINTS
+   ========================================================================== */
+
+// 1. GET Latest Weather Reading
 app.get('/api/weather', async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -129,6 +169,7 @@ app.get('/api/weather', async (req, res) => {
   }
 });
 
+// 2. GET Road Passability Conditions
 app.get('/api/roads', async (req, res) => {
   try {
     const { data, error } = await supabase.from('road_segments').select('*');
@@ -139,10 +180,11 @@ app.get('/api/roads', async (req, res) => {
   }
 });
 
+// 3. Cron Endpoint (Executed via cron-job.org or direct curl)
 app.get('/api/cron/fetch-weather', async (req, res) => {
   try {
     const newRecord = await fetchAndStoreWeather();
-    res.json({ success: true, message: 'Saved reading to Supabase', data: newRecord });
+    res.json({ success: true, message: 'Saved converted metrics to Supabase', data: newRecord });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -150,6 +192,9 @@ app.get('/api/cron/fetch-weather', async (req, res) => {
 
 export default app;
 
+// Local Server Development Engine
 if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+  app.listen(PORT, () => {
+    console.log(`Server running locally on http://localhost:${PORT}`);
+  });
 }
