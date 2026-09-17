@@ -14,6 +14,39 @@ const supabase = createClient(
   process.env.SUPABASE_KEY
 );
 
+/**
+ * Calculates Dew Point in °C from Temperature (°C) and Humidity (%)
+ */
+function calcDewPoint(tempC, humidity) {
+  if (tempC == null || humidity == null) return null;
+  const a = 17.27;
+  const b = 237.7;
+  const alpha = ((a * tempC) / (b + tempC)) + Math.log(humidity / 100);
+  return Number(((b * alpha) / (a - alpha)).toFixed(1));
+}
+
+/**
+ * Calculates Heat Index / Feels Like in °C
+ */
+function calcFeelsLike(tempC, humidity) {
+  if (tempC == null) return null;
+  if (humidity == null || tempC < 27) return tempC;
+  const c1 = -8.78469475556;
+  const c2 = 1.61139411;
+  const c3 = 2.33854883889;
+  const c4 = -0.14611605;
+  const c5 = -0.012308094;
+  const c6 = -0.0164248277778;
+  const c7 = 0.002211732;
+  const c8 = 0.00072546;
+  const c9 = -0.000003582;
+  const hi = c1 + (c2 * tempC) + (c3 * humidity) + (c4 * tempC * humidity) + 
+             (c5 * tempC * tempC) + (c6 * humidity * humidity) + 
+             (c7 * tempC * tempC * humidity) + (c8 * tempC * humidity * humidity) + 
+             (c9 * tempC * tempC * humidity * humidity);
+  return Number(hi.toFixed(1));
+}
+
 async function fetchAndStoreWeather() {
   const APP_KEY = process.env.ECOWITT_APP_KEY;
   const API_KEY = process.env.ECOWITT_API_KEY;
@@ -24,45 +57,54 @@ async function fetchAndStoreWeather() {
   const response = await fetch(url);
   const result = await response.json();
 
-  if (result.code !== 0) throw new Error(result.msg || 'Ecowitt error');
+  if (result.code !== 0) throw new Error(result.msg || 'Ecowitt API Error');
 
-  const data = result.data || {};
+  const d = result.data || {};
 
-  // Converters
-  const fToC = (f) => (f !== undefined && f !== null && !isNaN(f)) ? Number((((parseFloat(f) - 32) * 5) / 9).toFixed(1)) : null;
-  const mphToKmh = (mph) => (mph !== undefined && mph !== null && !isNaN(mph)) ? Number((parseFloat(mph) * 1.60934).toFixed(1)) : null;
-  const inToMm = (inches) => (inches !== undefined && inches !== null && !isNaN(inches)) ? Number((parseFloat(inches) * 25.4).toFixed(1)) : null;
-  const inHgToHpa = (inHg) => (inHg !== undefined && inHg !== null && !isNaN(inHg)) ? Number((parseFloat(inHg) * 33.8639).toFixed(1)) : null;
+  // Safely extract numeric values (handling unit strings or raw numbers)
+  const getVal = (obj) => {
+    if (!obj || obj.value === undefined || obj.value === null) return null;
+    const parsed = parseFloat(obj.value);
+    return isNaN(parsed) ? null : parsed;
+  };
+
+  const tempC = getVal(d.outdoor?.temperature);
+  const humidity = getVal(d.outdoor?.humidity);
+  const indoorTempC = getVal(d.indoor?.temperature);
+  const indoorHumidity = getVal(d.indoor?.humidity);
 
   const record = {
     // Outdoor
-    temp_c: fToC(data.outdoor?.temperature?.value),
-    humidity: data.outdoor?.humidity?.value ? parseInt(data.outdoor.humidity.value) : null,
-    feels_like_c: fToC(data.outdoor?.feels_like?.value ?? data.outdoor?.app_temp?.value),
-    dew_point_c: fToC(data.outdoor?.dew_point?.value),
+    temp_c: tempC,
+    humidity: humidity,
+    feels_like_c: getVal(d.outdoor?.feels_like) ?? calcFeelsLike(tempC, humidity),
+    dew_point_c: getVal(d.outdoor?.dew_point) ?? calcDewPoint(tempC, humidity),
 
     // Indoor
-    indoor_temp_c: fToC(data.indoor?.temperature?.value),
-    indoor_humidity: data.indoor?.humidity?.value ? parseInt(data.indoor.humidity.value) : null,
+    indoor_temp_c: indoorTempC,
+    indoor_humidity: indoorHumidity,
 
     // Solar & UVI
-    solar_w_m2: data.solar_and_uvi?.solar_radiation?.value ? parseFloat(data.solar_and_uvi.solar_radiation.value) : null,
-    uvi: data.solar_and_uvi?.uvi?.value ? parseInt(data.solar_and_uvi.uvi.value) : null,
+    solar_w_m2: getVal(d.solar_and_uvi?.solar_radiation),
+    uvi: getVal(d.solar_and_uvi?.uvi),
 
     // Rainfall
-    rain_rate_mm: inToMm(data.rainfall?.rain_rate?.value),
-    daily_rain_mm: inToMm(data.rainfall?.daily?.value),
-    event_rain_mm: inToMm(data.rainfall?.event?.value),
-    monthly_rain_mm: inToMm(data.rainfall?.monthly?.value),
+    rain_rate_mm: getVal(d.rainfall?.rain_rate),
+    daily_rain_mm: getVal(d.rainfall?.daily),
+    event_rain_mm: getVal(d.rainfall?.event),
+    hourly_rain_mm: getVal(d.rainfall?.hourly),
+    weekly_rain_mm: getVal(d.rainfall?.weekly),
+    monthly_rain_mm: getVal(d.rainfall?.monthly),
+    yearly_rain_mm: getVal(d.rainfall?.yearly),
 
     // Wind
-    wind_speed_kmh: mphToKmh(data.wind?.wind_speed?.value),
-    wind_gust_kmh: mphToKmh(data.wind?.wind_gust?.value),
-    wind_dir: data.wind?.wind_direction?.value ? parseInt(data.wind.wind_direction.value) : null,
+    wind_speed_kmh: getVal(d.wind?.wind_speed),
+    wind_gust_kmh: getVal(d.wind?.wind_gust),
+    wind_dir: getVal(d.wind?.wind_direction),
 
     // Pressure
-    pressure_rel_hpa: inHgToHpa(data.pressure?.relative?.value),
-    pressure_abs_hpa: inHgToHpa(data.pressure?.absolute?.value)
+    pressure_rel_hpa: getVal(d.pressure?.relative),
+    pressure_abs_hpa: getVal(d.pressure?.absolute)
   };
 
   const { error } = await supabase.from('weather_logs').insert([record]);
@@ -71,7 +113,7 @@ async function fetchAndStoreWeather() {
   return record;
 }
 
-// Endpoints
+// Routes
 app.get('/api/weather', async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -100,7 +142,7 @@ app.get('/api/roads', async (req, res) => {
 app.get('/api/cron/fetch-weather', async (req, res) => {
   try {
     const newRecord = await fetchAndStoreWeather();
-    res.json({ success: true, message: 'Saved to Supabase', data: newRecord });
+    res.json({ success: true, message: 'Saved reading to Supabase', data: newRecord });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

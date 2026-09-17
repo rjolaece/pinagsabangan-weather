@@ -22,7 +22,7 @@
       </div>
     </div>
 
-    <!-- Weather Grid (2 Rows of 3 Tiles) -->
+    <!-- Weather Tiles (3 Columns x 2 Rows) -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
       
       <!-- Outdoor -->
@@ -81,8 +81,9 @@
             <p id="rain-rate" class="text-3xl font-bold mt-1 text-blue-400">0.0 <span class="text-xs font-normal text-slate-400">mm</span></p>
           </div>
           <div class="text-right text-xs space-y-1 text-slate-400">
-            <p>Daily: <span id="rain-daily" class="text-slate-200 font-semibold">0.0 mm</span></p>
             <p>Event: <span id="rain-event" class="text-slate-200 font-semibold">0.0 mm</span></p>
+            <p>Daily: <span id="rain-daily" class="text-slate-200 font-semibold">0.0 mm</span></p>
+            <p>Weekly: <span id="rain-weekly" class="text-slate-200 font-semibold">0.0 mm</span></p>
             <p>Monthly: <span id="rain-monthly" class="text-slate-200 font-semibold">0.0 mm</span></p>
           </div>
         </div>
@@ -139,28 +140,32 @@
         
         if (weather.success && weather.data) {
           const d = weather.data;
-          document.getElementById('temp').innerText = d.temp_c !== null ? `${d.temp_c} °C` : '-- °C';
-          document.getElementById('humidity').innerText = d.humidity !== null ? `${d.humidity} %` : '-- %';
-          document.getElementById('feels-like').innerText = `Feels Like ${d.feels_like_c ?? '--'} °C`;
-          document.getElementById('dew-point').innerText = `Dew Point ${d.dew_point_c ?? '--'} °C`;
           
-          document.getElementById('indoor-temp').innerText = d.indoor_temp_c !== null ? `${d.indoor_temp_c} °C` : '-- °C';
-          document.getElementById('indoor-humidity').innerText = d.indoor_humidity !== null ? `${d.indoor_humidity} %` : '-- %';
+          const fmt = (val, unit = '') => (val !== null && val !== undefined) ? `${val} ${unit}`.trim() : '--';
+
+          document.getElementById('temp').innerText = fmt(d.temp_c, '°C');
+          document.getElementById('humidity').innerText = fmt(d.humidity, '%');
+          document.getElementById('feels-like').innerText = `Feels Like ${fmt(d.feels_like_c, '°C')}`;
+          document.getElementById('dew-point').innerText = `Dew Point ${fmt(d.dew_point_c, '°C')}`;
           
-          document.getElementById('solar').innerHTML = `${d.solar_w_m2 ?? '--'} <span class="text-xs font-normal text-slate-400">W/m²</span>`;
-          document.getElementById('uvi').innerText = d.uvi ?? '--';
+          document.getElementById('indoor-temp').innerText = fmt(d.indoor_temp_c, '°C');
+          document.getElementById('indoor-humidity').innerText = fmt(d.indoor_humidity, '%');
           
-          document.getElementById('rain-rate').innerHTML = `${d.rain_rate_mm ?? '0.0'} <span class="text-xs font-normal text-slate-400">mm</span>`;
-          document.getElementById('rain-daily').innerText = `${d.daily_rain_mm ?? '0.0'} mm`;
-          document.getElementById('rain-event').innerText = `${d.event_rain_mm ?? '0.0'} mm`;
-          document.getElementById('rain-monthly').innerText = `${d.monthly_rain_mm ?? '0.0'} mm`;
+          document.getElementById('solar').innerHTML = `${fmt(d.solar_w_m2)} <span class="text-xs font-normal text-slate-400">W/m²</span>`;
+          document.getElementById('uvi').innerText = fmt(d.uvi);
           
-          document.getElementById('wind-speed').innerHTML = `${d.wind_speed_kmh ?? '--'} <span class="text-xs font-normal text-slate-400">km/h</span>`;
-          document.getElementById('wind-gust').innerHTML = `${d.wind_gust_kmh ?? '--'} <span class="text-xs font-normal text-slate-400">km/h</span>`;
-          document.getElementById('wind-dir').innerText = `Dir: ${d.wind_dir ?? '--'}°`;
+          document.getElementById('rain-rate').innerHTML = `${fmt(d.rain_rate_mm ?? 0)} <span class="text-xs font-normal text-slate-400">mm</span>`;
+          document.getElementById('rain-event').innerText = `${fmt(d.event_rain_mm ?? 0, 'mm')}`;
+          document.getElementById('rain-daily').innerText = `${fmt(d.daily_rain_mm ?? 0, 'mm')}`;
+          document.getElementById('rain-weekly').innerText = `${fmt(d.weekly_rain_mm ?? 0, 'mm')}`;
+          document.getElementById('rain-monthly').innerText = `${fmt(d.monthly_rain_mm ?? 0, 'mm')}`;
           
-          document.getElementById('pressure-rel').innerHTML = `${d.pressure_rel_hpa ?? '--'} <span class="text-xs font-normal text-slate-400">hPa</span>`;
-          document.getElementById('pressure-abs').innerHTML = `${d.pressure_abs_hpa ?? '--'} <span class="text-xs font-normal text-slate-400">hPa</span>`;
+          document.getElementById('wind-speed').innerHTML = `${fmt(d.wind_speed_kmh)} <span class="text-xs font-normal text-slate-400">km/h</span>`;
+          document.getElementById('wind-gust').innerHTML = `${fmt(d.wind_gust_kmh)} <span class="text-xs font-normal text-slate-400">km/h</span>`;
+          document.getElementById('wind-dir').innerText = `Dir: ${fmt(d.wind_dir, '°')}`;
+          
+          document.getElementById('pressure-rel').innerHTML = `${fmt(d.pressure_rel_hpa)} <span class="text-xs font-normal text-slate-400">hPa</span>`;
+          document.getElementById('pressure-abs').innerHTML = `${fmt(d.pressure_abs_hpa)} <span class="text-xs font-normal text-slate-400">hPa</span>`;
           
           if (d.created_at) {
             document.getElementById('updated-at').innerText = `Reported at ${new Date(d.created_at).toLocaleTimeString()}`;
