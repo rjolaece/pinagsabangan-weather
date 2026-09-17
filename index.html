@@ -330,7 +330,46 @@
       const index = Math.round((deg % 360) / 22.5) % 16;
       return directions[index];
     }
+function updateDynamicRainfallBackground(rainRate) {
+  const rate = parseFloat(rainRate) || 0;
+  const bgLayer = document.getElementById('rain-bg-layer');
+  const badgeEl = document.getElementById('rain-status-badge');
+  if (!bgLayer) return;
 
+  let gifUrl = '';
+  let label = 'Dry';
+  let badgeClass = 'bg-slate-800 text-slate-400 border-slate-700';
+
+  if (rate === 0) {
+    // Dry / Clear Skies GIF
+    gifUrl = 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmFlM2NmZGFiODhhMzQ0MDBhNDkyZDU2MWJmYWU4ZGNlZDA5ZjA3ZiZlcD12MV9pbnRlcm5hbF9naWZfaWQmY3Q9Zw/3o7TKrEzvLbsVAud8I/giphy.gif';
+    label = 'Dry';
+  } else if (rate > 0 && rate < 2.5) {
+    // Light Rain / Drizzle GIF
+    gifUrl = 'https://media.giphy.com/media/t7a3P9eB9dYgY4T8bL/giphy.gif';
+    label = 'Light Rain';
+    badgeClass = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+  } else if (rate >= 2.5 && rate < 7.6) {
+    // Moderate Rain GIF
+    gifUrl = 'https://media.giphy.com/media/l0HlPwMA32z8y9NEA/giphy.gif';
+    label = 'Moderate Rain';
+    badgeClass = 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
+  } else {
+    // Heavy Storm / Downpour GIF
+    gifUrl = 'https://media.giphy.com/media/13fI2K0Fh9pZrq/giphy.gif';
+    label = 'Heavy Rain';
+    badgeClass = 'bg-indigo-500/20 text-indigo-300 border-indigo-400/30';
+  }
+
+  // Set animated GIF background and maintain 70% transparency
+  bgLayer.style.backgroundImage = `url('${gifUrl}')`;
+  bgLayer.style.opacity = '0.3';
+
+  if (badgeEl) {
+    badgeEl.innerText = label;
+    badgeEl.className = `px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${badgeClass}`;
+  }
+}
     function updateUVGauge(uvi) {
       const val = parseFloat(uvi) || 0;
       const maxVal = 12;
