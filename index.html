@@ -6,217 +6,223 @@
   <title>Pinagsabangan Weather Station</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
 </head>
-<body class="bg-[#0b101b] text-slate-100 min-h-screen p-3 md:p-6 font-sans selection:bg-cyan-500 selection:text-white">
+<body class="bg-[#070a12] text-slate-100 min-h-screen p-4 sm:p-6 md:p-10 selection:bg-cyan-500/30 selection:text-cyan-200">
 
-  <div class="max-w-7xl mx-auto space-y-5">
+  <!-- Ambient Glow Effects -->
+  <div class="fixed top-0 left-1/4 w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+  <div class="fixed bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+  <div class="max-w-7xl mx-auto space-y-6 relative z-10">
     
-    <!-- 1. Header Hero Banner (Dark Left -> Light Right Gradient) -->
-    <div class="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-slate-950 via-slate-900/90 to-slate-800/40 backdrop-blur-xl shadow-2xl">
-      <!-- Background Ambient Glow -->
-      <div class="absolute -top-24 -left-24 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
-
-      <div class="relative p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div class="flex items-center gap-5">
-          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-400/30 flex items-center justify-center text-cyan-400 text-2xl shadow-lg shadow-cyan-500/10 backdrop-blur-md">
-            <i class="fa-solid fa-cloud-sun"></i>
-          </div>
-          <div>
-            <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
-              Pinagsabangan Weather Station
-            </h1>
-            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-slate-300 mt-1.5">
-              <span><i class="fa-solid fa-location-dot text-rose-400 mr-1.5"></i>Pinagsabangan, Naujan, Oriental Mindoro</span>
-              <span id="updated-at"><i class="fa-regular fa-clock text-slate-400 mr-1.5"></i>Reported at --</span>
-            </div>
-          </div>
+    <!-- Top Bar Header -->
+    <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl bg-slate-900/40 border border-white/5 backdrop-blur-2xl shadow-2xl">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-xl shadow-inner">
+          <i class="fa-solid fa-cloud-sun"></i>
         </div>
-
         <div>
-          <span class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 backdrop-blur-md shadow-lg shadow-emerald-500/10">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span> Live Online
-          </span>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl md:text-2xl font-extrabold tracking-tight text-white">Pinagsabangan</h1>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-800/80 text-slate-400 border border-slate-700/50 uppercase tracking-wider">Station</span>
+          </div>
+          <p class="text-xs text-slate-400 font-medium mt-0.5 flex items-center gap-1.5">
+            <i class="fa-solid fa-location-dot text-rose-400/80"></i> Naujan, Oriental Mindoro
+            <span class="text-slate-600">•</span>
+            <span id="updated-at" class="text-slate-400"><i class="fa-regular fa-clock mr-1"></i>Reported -- ago</span>
+          </p>
         </div>
       </div>
-    </div>
 
-    <!-- 2. Weather Tiles Grid -->
+      <div class="flex items-center gap-3">
+        <div class="px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold flex items-center gap-2 backdrop-blur-md">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          Live Feed
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Grid Metrics -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
       
-      <!-- Outdoor Tile -->
-      <div class="relative overflow-hidden rounded-3xl border border-white/15 bg-slate-900/60 backdrop-blur-xl shadow-xl group transition-all duration-300 hover:border-cyan-400/60">
-        <div class="absolute inset-0 bg-cover bg-center opacity-50 group-hover:scale-105 transition-transform duration-500 pointer-events-none" style="background-image: url('https://images.unsplash.com/photo-1534088568595-a066f410bcda?q=80&w=600&auto=format&fit=crop');"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-[#0b101b]/80 via-[#0b101b]/50 to-[#0b101b]/85"></div>
-        
-        <div class="relative p-6 space-y-5">
-          <div class="flex items-center gap-3 border-b border-white/15 pb-4">
-            <div class="w-10 h-10 rounded-xl bg-cyan-500/30 text-cyan-300 flex items-center justify-center border border-cyan-400/40 text-sm shadow-lg backdrop-blur-md">
+      <!-- Outdoor Primary Card -->
+      <div class="p-6 rounded-3xl bg-gradient-to-b from-slate-900/60 to-slate-900/20 border border-white/5 backdrop-blur-xl shadow-xl flex flex-col justify-between space-y-6 hover:border-cyan-500/30 transition-all duration-300">
+        <div class="flex items-center justify-between border-b border-white/5 pb-4">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-xs border border-cyan-500/20">
               <i class="fa-solid fa-temperature-half"></i>
             </div>
-            <h2 class="text-base font-bold text-slate-100 drop-shadow-sm">Outdoor</h2>
+            <span class="text-xs font-bold tracking-wider uppercase text-slate-400">Outdoor Conditions</span>
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <span class="text-xs text-slate-200 font-medium flex items-center gap-1.5 drop-shadow"><i class="fa-solid fa-temperature-three-quarters text-slate-300"></i> Temperature</span>
-              <p id="temp" class="text-3xl font-black mt-1 text-white tracking-tight drop-shadow-md">-- °C</p>
-              <p id="feels-like" class="text-xs text-amber-300 font-bold mt-3 flex items-center gap-1 drop-shadow"><i class="fa-solid fa-arrow-up"></i> Feels Like -- °C</p>
+          <span class="text-[11px] font-medium text-slate-500">Telemetry</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <span class="text-xs font-medium text-slate-400">Temperature</span>
+            <div class="text-4xl font-extrabold text-white mt-1 tracking-tight" id="temp">--°C</div>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium mt-3" id="feels-like">
+              Feels Like --°C
             </div>
-            <div>
-              <span class="text-xs text-slate-200 font-medium flex items-center gap-1.5 drop-shadow"><i class="fa-solid fa-droplet text-slate-300"></i> Humidity</span>
-              <p id="humidity" class="text-3xl font-black mt-1 text-white tracking-tight drop-shadow-md">-- %</p>
-              <p id="dew-point" class="text-xs text-cyan-300 font-bold mt-3 flex items-center gap-1 drop-shadow"><i class="fa-solid fa-arrow-down"></i> Dew Point -- °C</p>
+          </div>
+          <div>
+            <span class="text-xs font-medium text-slate-400">Humidity</span>
+            <div class="text-4xl font-extrabold text-white mt-1 tracking-tight" id="humidity">--%</div>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-medium mt-3" id="dew-point">
+              Dew Point --°C
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Indoor Tile -->
-      <div class="relative overflow-hidden rounded-3xl border border-white/15 bg-slate-900/60 backdrop-blur-xl shadow-xl group transition-all duration-300 hover:border-emerald-400/60">
-        <div class="absolute inset-0 bg-cover bg-center opacity-50 group-hover:scale-105 transition-transform duration-500 pointer-events-none" style="background-image: url('https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=600&auto=format&fit=crop');"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-[#0b101b]/80 via-[#0b101b]/50 to-[#0b101b]/85"></div>
-
-        <div class="relative p-6 space-y-5">
-          <div class="flex items-center gap-3 border-b border-white/15 pb-4">
-            <div class="w-10 h-10 rounded-xl bg-emerald-500/30 text-emerald-300 flex items-center justify-center border border-emerald-400/40 text-sm shadow-lg backdrop-blur-md">
+      <!-- Indoor Card -->
+      <div class="p-6 rounded-3xl bg-gradient-to-b from-slate-900/60 to-slate-900/20 border border-white/5 backdrop-blur-xl shadow-xl flex flex-col justify-between space-y-6 hover:border-emerald-500/30 transition-all duration-300">
+        <div class="flex items-center justify-between border-b border-white/5 pb-4">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs border border-emerald-500/20">
               <i class="fa-solid fa-house"></i>
             </div>
-            <h2 class="text-base font-bold text-slate-100 drop-shadow-sm">Indoor</h2>
+            <span class="text-xs font-bold tracking-wider uppercase text-slate-400">Indoor Climate</span>
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <span class="text-xs text-slate-200 font-medium flex items-center gap-1.5 drop-shadow"><i class="fa-solid fa-temperature-three-quarters text-slate-300"></i> Temperature</span>
-              <p id="indoor-temp" class="text-3xl font-black mt-1 text-white tracking-tight drop-shadow-md">-- °C</p>
-            </div>
-            <div>
-              <span class="text-xs text-slate-200 font-medium flex items-center gap-1.5 drop-shadow"><i class="fa-solid fa-droplet text-slate-300"></i> Humidity</span>
-              <p id="indoor-humidity" class="text-3xl font-black mt-1 text-white tracking-tight drop-shadow-md">-- %</p>
-            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <span class="text-xs font-medium text-slate-400">Indoor Temp</span>
+            <div class="text-3xl font-extrabold text-white mt-2 tracking-tight" id="indoor-temp">--°C</div>
+          </div>
+          <div>
+            <span class="text-xs font-medium text-slate-400">Indoor Humidity</span>
+            <div class="text-3xl font-extrabold text-white mt-2 tracking-tight" id="indoor-humidity">--%</div>
           </div>
         </div>
       </div>
 
-      <!-- Solar and UVI Tile -->
-      <div class="relative overflow-hidden rounded-3xl border border-white/15 bg-slate-900/60 backdrop-blur-xl shadow-xl group transition-all duration-300 hover:border-amber-400/60">
-        <div class="absolute inset-0 bg-cover bg-center opacity-50 group-hover:scale-105 transition-transform duration-500 pointer-events-none" style="background-image: url('https://images.unsplash.com/photo-1509391365360-2e959784a276?q=80&w=600&auto=format&fit=crop');"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-[#0b101b]/80 via-[#0b101b]/50 to-[#0b101b]/85"></div>
-
-        <div class="relative p-6 space-y-5">
-          <div class="flex items-center gap-3 border-b border-white/15 pb-4">
-            <div class="w-10 h-10 rounded-xl bg-amber-500/30 text-amber-300 flex items-center justify-center border border-amber-400/40 text-sm shadow-lg backdrop-blur-md">
+      <!-- Solar & UVI Card -->
+      <div class="p-6 rounded-3xl bg-gradient-to-b from-slate-900/60 to-slate-900/20 border border-white/5 backdrop-blur-xl shadow-xl flex flex-col justify-between space-y-6 hover:border-amber-500/30 transition-all duration-300">
+        <div class="flex items-center justify-between border-b border-white/5 pb-4">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xs border border-amber-500/20">
               <i class="fa-solid fa-sun"></i>
             </div>
-            <h2 class="text-base font-bold text-slate-100 drop-shadow-sm">Solar and UVI</h2>
+            <span class="text-xs font-bold tracking-wider uppercase text-slate-400">Solar & Radiation</span>
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <span class="text-xs text-slate-200 font-medium flex items-center gap-1.5 drop-shadow"><i class="fa-solid fa-sun text-slate-300"></i> Solar</span>
-              <p id="solar" class="text-3xl font-black mt-1 text-white tracking-tight drop-shadow-md">-- <span class="text-xs font-normal text-slate-300">W/m²</span></p>
-            </div>
-            <div>
-              <span class="text-xs text-slate-200 font-medium flex items-center gap-1.5 drop-shadow"><i class="fa-solid fa-circle-radiation text-slate-300"></i> UVI</span>
-              <p id="uvi" class="text-3xl font-black mt-1 text-white tracking-tight drop-shadow-md">--</p>
-            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <span class="text-xs font-medium text-slate-400">Solar Radiation</span>
+            <div class="text-3xl font-extrabold text-white mt-2 tracking-tight" id="solar">-- <span class="text-xs font-normal text-slate-500">W/m²</span></div>
+          </div>
+          <div>
+            <span class="text-xs font-medium text-slate-400">UV Index</span>
+            <div class="text-3xl font-extrabold text-white mt-2 tracking-tight" id="uvi">--</div>
           </div>
         </div>
       </div>
 
-      <!-- Rainfall Tile -->
-      <div class="relative overflow-hidden rounded-3xl border border-white/15 bg-slate-900/60 backdrop-blur-xl shadow-xl group transition-all duration-300 hover:border-blue-400/60">
-        <div class="absolute inset-0 bg-cover bg-center opacity-50 group-hover:scale-105 transition-transform duration-500 pointer-events-none" style="background-image: url('https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?q=80&w=600&auto=format&fit=crop');"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-[#0b101b]/80 via-[#0b101b]/50 to-[#0b101b]/85"></div>
-
-        <div class="relative p-6 space-y-5">
-          <div class="flex items-center gap-3 border-b border-white/15 pb-4">
-            <div class="w-10 h-10 rounded-xl bg-blue-500/30 text-blue-300 flex items-center justify-center border border-blue-400/40 text-sm shadow-lg backdrop-blur-md">
+      <!-- Rainfall Card -->
+      <div class="p-6 rounded-3xl bg-gradient-to-b from-slate-900/60 to-slate-950/40 border border-white/5 backdrop-blur-xl shadow-xl space-y-5 hover:border-blue-500/30 transition-all duration-300">
+        <div class="flex items-center justify-between border-b border-white/5 pb-4">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-xs border border-blue-500/20">
               <i class="fa-solid fa-cloud-showers-heavy"></i>
             </div>
-            <h2 class="text-base font-bold text-slate-100 drop-shadow-sm">Rainfall</h2>
+            <span class="text-xs font-bold tracking-wider uppercase text-slate-400">Rainfall Dynamics</span>
           </div>
-          <div class="flex justify-between items-baseline">
-            <div>
-              <span class="text-xs text-slate-200 font-medium flex items-center gap-1.5 drop-shadow"><i class="fa-solid fa-cloud-rain text-slate-300"></i> Rain Rate /hr</span>
-              <p id="rain-rate" class="text-3xl font-black mt-1 text-blue-300 tracking-tight drop-shadow-md">0 <span class="text-xs font-normal text-slate-300">mm</span></p>
-            </div>
-            <div class="text-right text-xs space-y-1.5 text-slate-200 drop-shadow">
-              <p><i class="fa-regular fa-calendar-check text-slate-300 mr-1.5"></i>Event: <span id="rain-event" class="font-bold text-white">0 mm</span></p>
-              <p><i class="fa-regular fa-calendar-days text-slate-300 mr-1.5"></i>Daily: <span id="rain-daily" class="font-bold text-white">0 mm</span></p>
-              <p><i class="fa-solid fa-calendar-week text-slate-300 mr-1.5"></i>Weekly: <span id="rain-weekly" class="font-bold text-white">0 mm</span></p>
-              <p><i class="fa-regular fa-calendar text-slate-300 mr-1.5"></i>Monthly: <span id="rain-monthly" class="font-bold text-white">0 mm</span></p>
-            </div>
+        </div>
+
+        <div class="flex items-baseline justify-between">
+          <div>
+            <span class="text-xs font-medium text-slate-400">Current Rate</span>
+            <div class="text-4xl font-extrabold text-blue-400 mt-1 tracking-tight" id="rain-rate">0.0 <span class="text-xs font-normal text-slate-500">mm/h</span></div>
+          </div>
+          <div class="text-right text-xs space-y-1 bg-slate-950/50 p-3 rounded-2xl border border-white/5">
+            <div class="text-slate-400">Event: <span id="rain-event" class="font-bold text-slate-200">0.0 mm</span></div>
+            <div class="text-slate-400">Daily: <span id="rain-daily" class="font-bold text-slate-200">0.0 mm</span></div>
+            <div class="text-slate-400">Monthly: <span id="rain-monthly" class="font-bold text-slate-200">0.0 mm</span></div>
           </div>
         </div>
       </div>
 
-      <!-- Wind Tile -->
-      <div class="relative overflow-hidden rounded-3xl border border-white/15 bg-slate-900/60 backdrop-blur-xl shadow-xl group transition-all duration-300 hover:border-teal-400/60">
-        <div class="absolute inset-0 bg-cover bg-center opacity-50 group-hover:scale-105 transition-transform duration-500 pointer-events-none" style="background-image: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=600&auto=format&fit=crop');"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-[#0b101b]/80 via-[#0b101b]/50 to-[#0b101b]/85"></div>
-
-        <div class="relative p-6 space-y-5">
-          <div class="flex items-center gap-3 border-b border-white/15 pb-4">
-            <div class="w-10 h-10 rounded-xl bg-teal-500/30 text-teal-300 flex items-center justify-center border border-teal-400/40 text-sm shadow-lg backdrop-blur-md">
+      <!-- Wind Card -->
+      <div class="p-6 rounded-3xl bg-gradient-to-b from-slate-900/60 to-slate-950/40 border border-white/5 backdrop-blur-xl shadow-xl space-y-5 hover:border-teal-500/30 transition-all duration-300">
+        <div class="flex items-center justify-between border-b border-white/5 pb-4">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center text-xs border border-teal-500/20">
               <i class="fa-solid fa-wind"></i>
             </div>
-            <h2 class="text-base font-bold text-slate-100 drop-shadow-sm">Wind</h2>
+            <span class="text-xs font-bold tracking-wider uppercase text-slate-400">Wind Vector</span>
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <span class="text-xs text-slate-200 font-medium flex items-center gap-1.5 drop-shadow"><i class="fa-solid fa-wind text-slate-300"></i> Speed</span>
-              <p id="wind-speed" class="text-3xl font-black mt-1 text-white tracking-tight drop-shadow-md">-- <span class="text-xs font-normal text-slate-300">km/h</span></p>
-              <p id="wind-dir-text" class="text-xs text-cyan-300 font-bold mt-3 flex items-center gap-1 drop-shadow"><i class="fa-solid fa-compass"></i> Dir: --°</p>
-            </div>
-            <div>
-              <span class="text-xs text-slate-200 font-medium flex items-center gap-1.5 drop-shadow"><i class="fa-solid fa-align-left text-slate-300"></i> Gust</span>
-              <p id="wind-gust" class="text-3xl font-black mt-1 text-white tracking-tight drop-shadow-md">-- <span class="text-xs font-normal text-slate-300">km/h</span></p>
-            </div>
+          <span id="wind-dir-text" class="text-xs font-semibold text-teal-400"><i class="fa-solid fa-compass mr-1"></i>--°</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <span class="text-xs font-medium text-slate-400">Wind Speed</span>
+            <div class="text-3xl font-extrabold text-white mt-1 tracking-tight" id="wind-speed">-- <span class="text-xs font-normal text-slate-500">km/h</span></div>
+          </div>
+          <div>
+            <span class="text-xs font-medium text-slate-400">Peak Gust</span>
+            <div class="text-3xl font-extrabold text-white mt-1 tracking-tight" id="wind-gust">-- <span class="text-xs font-normal text-slate-500">km/h</span></div>
           </div>
         </div>
       </div>
 
-      <!-- Pressure Tile -->
-      <div class="relative overflow-hidden rounded-3xl border border-white/15 bg-slate-900/60 backdrop-blur-xl shadow-xl group transition-all duration-300 hover:border-purple-400/60">
-        <div class="absolute inset-0 bg-cover bg-center opacity-50 group-hover:scale-105 transition-transform duration-500 pointer-events-none" style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=600&auto=format&fit=crop');"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-[#0b101b]/80 via-[#0b101b]/50 to-[#0b101b]/85"></div>
-
-        <div class="relative p-6 space-y-5">
-          <div class="flex items-center gap-3 border-b border-white/15 pb-4">
-            <div class="w-10 h-10 rounded-xl bg-purple-500/30 text-purple-300 flex items-center justify-center border border-purple-400/40 text-sm shadow-lg backdrop-blur-md">
+      <!-- Atmospheric Pressure Card -->
+      <div class="p-6 rounded-3xl bg-gradient-to-b from-slate-900/60 to-slate-950/40 border border-white/5 backdrop-blur-xl shadow-xl space-y-5 hover:border-purple-500/30 transition-all duration-300">
+        <div class="flex items-center justify-between border-b border-white/5 pb-4">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-xs border border-purple-500/20">
               <i class="fa-solid fa-gauge-high"></i>
             </div>
-            <h2 class="text-base font-bold text-slate-100 drop-shadow-sm">Pressure</h2>
+            <span class="text-xs font-bold tracking-wider uppercase text-slate-400">Barometric Pressure</span>
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <span class="text-xs text-slate-200 font-medium flex items-center gap-1.5 drop-shadow"><i class="fa-solid fa-gauge-simple text-slate-300"></i> Relative</span>
-              <p id="pressure-rel" class="text-2xl font-black mt-1 text-white tracking-tight drop-shadow-md">-- <span class="text-xs font-normal text-slate-300">hPa</span></p>
-            </div>
-            <div>
-              <span class="text-xs text-slate-200 font-medium flex items-center gap-1.5 drop-shadow"><i class="fa-solid fa-gauge text-slate-300"></i> Absolute</span>
-              <p id="pressure-abs" class="text-2xl font-black mt-1 text-white tracking-tight drop-shadow-md">-- <span class="text-xs font-normal text-slate-300">hPa</span></p>
-            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <span class="text-xs font-medium text-slate-400">Relative</span>
+            <div class="text-2xl font-extrabold text-white mt-2 tracking-tight" id="pressure-rel">-- <span class="text-xs font-normal text-slate-500">hPa</span></div>
+          </div>
+          <div>
+            <span class="text-xs font-medium text-slate-400">Absolute</span>
+            <div class="text-2xl font-extrabold text-white mt-2 tracking-tight" id="pressure-abs">-- <span class="text-xs font-normal text-slate-500">hPa</span></div>
           </div>
         </div>
       </div>
 
     </div>
 
-    <!-- 3. Road Passability Section (Dark Left -> Light Right Gradient) -->
-    <div class="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-slate-950 via-slate-900/90 to-slate-800/40 backdrop-blur-xl shadow-2xl p-6 md:p-8 space-y-5">
-      <div class="relative flex justify-between items-center border-b border-white/10 pb-4">
+    <!-- Road Passability Status Section -->
+    <section class="p-6 md:p-8 rounded-3xl bg-slate-900/40 border border-white/5 backdrop-blur-xl shadow-2xl space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-5">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-400/30 text-cyan-400 flex items-center justify-center text-base font-black shadow-lg">
+          <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-base">
             <i class="fa-solid fa-road"></i>
           </div>
-          <h2 class="text-xl font-extrabold text-white tracking-tight">Road Passability Status</h2>
+          <div>
+            <h2 class="text-lg font-bold text-white tracking-tight">Road Passability Status</h2>
+            <p class="text-xs text-slate-400">Real-time transit conditions for local corridors</p>
+          </div>
         </div>
-        <span class="text-xs font-medium italic text-slate-400 hidden sm:inline">Safe Roads, Safer Communities</span>
       </div>
 
-      <div id="roads-container" class="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <p class="text-xs text-slate-500">Loading road conditions...</p>
+      <div id="roads-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="p-4 rounded-2xl bg-slate-950/40 border border-white/5 text-xs text-slate-500 animate-pulse">
+          Loading road status telemetry...
+        </div>
       </div>
-    </div>
+    </section>
 
   </div>
 
@@ -228,7 +234,7 @@
         
         if (weather.success && weather.data) {
           const d = weather.data;
-          const fmt = (val, unit = '') => (val !== null && val !== undefined) ? `${val} ${unit}`.trim() : '--';
+          const fmt = (val, unit = '') => (val !== null && val !== undefined) ? `${val}${unit}` : '--';
 
           document.getElementById('temp').innerText = fmt(d.temp_c, '°C');
           document.getElementById('humidity').innerText = fmt(d.humidity, '%');
@@ -238,24 +244,23 @@
           document.getElementById('indoor-temp').innerText = fmt(d.indoor_temp_c, '°C');
           document.getElementById('indoor-humidity').innerText = fmt(d.indoor_humidity, '%');
           
-          document.getElementById('solar').innerHTML = `${fmt(d.solar_w_m2)} <span class="text-xs font-normal text-slate-300">W/m²</span>`;
+          document.getElementById('solar').innerHTML = `${fmt(d.solar_w_m2)} <span class="text-xs font-normal text-slate-500">W/m²</span>`;
           document.getElementById('uvi').innerText = fmt(d.uvi);
           
-          document.getElementById('rain-rate').innerHTML = `${fmt(d.rain_rate_mm ?? 0)} <span class="text-xs font-normal text-slate-300">mm</span>`;
-          document.getElementById('rain-event').innerText = `${fmt(d.event_rain_mm ?? 0, 'mm')}`;
-          document.getElementById('rain-daily').innerText = `${fmt(d.daily_rain_mm ?? 0, 'mm')}`;
-          document.getElementById('rain-weekly').innerText = `${fmt(d.weekly_rain_mm ?? 0, 'mm')}`;
-          document.getElementById('rain-monthly').innerText = `${fmt(d.monthly_rain_mm ?? 0, 'mm')}`;
+          document.getElementById('rain-rate').innerHTML = `${fmt(d.rain_rate_mm ?? 0)} <span class="text-xs font-normal text-slate-500">mm/h</span>`;
+          document.getElementById('rain-event').innerText = fmt(d.event_rain_mm ?? 0, ' mm');
+          document.getElementById('rain-daily').innerText = fmt(d.daily_rain_mm ?? 0, ' mm');
+          document.getElementById('rain-monthly').innerText = fmt(d.monthly_rain_mm ?? 0, ' mm');
           
-          document.getElementById('wind-speed').innerHTML = `${fmt(d.wind_speed_kmh)} <span class="text-xs font-normal text-slate-300">km/h</span>`;
-          document.getElementById('wind-gust').innerHTML = `${fmt(d.wind_gust_kmh)} <span class="text-xs font-normal text-slate-300">km/h</span>`;
-          document.getElementById('wind-dir-text').innerHTML = `<i class="fa-solid fa-compass"></i> Dir: ${fmt(d.wind_dir, '°')}`;
+          document.getElementById('wind-speed').innerHTML = `${fmt(d.wind_speed_kmh)} <span class="text-xs font-normal text-slate-500">km/h</span>`;
+          document.getElementById('wind-gust').innerHTML = `${fmt(d.wind_gust_kmh)} <span class="text-xs font-normal text-slate-500">km/h</span>`;
+          document.getElementById('wind-dir-text').innerHTML = `<i class="fa-solid fa-compass mr-1"></i>${fmt(d.wind_dir, '°')}`;
           
-          document.getElementById('pressure-rel').innerHTML = `${fmt(d.pressure_rel_hpa)} <span class="text-xs font-normal text-slate-300">hPa</span>`;
-          document.getElementById('pressure-abs').innerHTML = `${fmt(d.pressure_abs_hpa)} <span class="text-xs font-normal text-slate-300">hPa</span>`;
+          document.getElementById('pressure-rel').innerHTML = `${fmt(d.pressure_rel_hpa)} <span class="text-xs font-normal text-slate-500">hPa</span>`;
+          document.getElementById('pressure-abs').innerHTML = `${fmt(d.pressure_abs_hpa)} <span class="text-xs font-normal text-slate-500">hPa</span>`;
           
           if (d.created_at) {
-            document.getElementById('updated-at').innerHTML = `<i class="fa-regular fa-clock text-slate-400 mr-1.5"></i>Reported at ${new Date(d.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            document.getElementById('updated-at').innerHTML = `<i class="fa-regular fa-clock mr-1"></i>Reported at ${new Date(d.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
           }
         }
 
@@ -267,19 +272,20 @@
             container.innerHTML = '<p class="text-xs text-slate-500">No road segments configured.</p>';
           } else {
             container.innerHTML = roads.data.map(r => `
-              <div class="flex items-center justify-between p-3.5 bg-slate-900/80 backdrop-blur-md rounded-2xl border border-white/10 shadow-md">
-                <div class="flex items-center gap-3">
-                  <div>
-                    <p class="text-sm font-bold text-slate-100">${r.road_name}</p>
-                    <p class="text-xs text-slate-400 flex items-center gap-1 mt-0.5"><i class="fa-solid fa-location-dot text-slate-500"></i> ${r.location_description || ''}</p>
-                  </div>
+              <div class="flex items-center justify-between p-4 bg-slate-950/60 rounded-2xl border border-white/5 backdrop-blur-md hover:border-slate-700/50 transition-all">
+                <div>
+                  <p class="text-sm font-bold text-white tracking-tight">${r.road_name}</p>
+                  <p class="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                    <i class="fa-solid fa-location-dot text-slate-500"></i> ${r.location_description || ''}
+                  </p>
                 </div>
-                <span class="px-3.5 py-1.5 rounded-full text-xs font-extrabold flex items-center gap-1.5 shadow-md ${
-                  r.status === 'PASSABLE' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40' :
-                  r.status === 'CAUTION' ? 'bg-amber-500/20 text-amber-300 border border-amber-400/40' :
-                  'bg-rose-500/20 text-rose-300 border border-rose-400/40'
+                <span class="px-3 py-1 rounded-full text-[11px] font-bold flex items-center gap-1.5 ${
+                  r.status === 'PASSABLE' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                  r.status === 'CAUTION' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                  'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                 }">
-                  <i class="fa-solid ${r.status === 'PASSABLE' ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i> ${r.status}
+                  <i class="fa-solid ${r.status === 'PASSABLE' ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i>
+                  ${r.status}
                 </span>
               </div>
             `).join('');
