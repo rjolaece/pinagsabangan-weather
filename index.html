@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pinagsabangan Weather & Road Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 p-4 md:p-8">
+
+  <div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <header class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+      <h1 class="text-2xl font-bold text-slate-900">Pinagsabangan Weather & Road Monitor</h1>
+      <p class="text-xs text-slate-500 mt-1">Live updates from local station • Refreshes every 30s</p>
+    </header>
+
+    <!-- Weather Cards Grid -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <span class="text-xs font-semibold text-slate-400">TEMPERATURE</span>
+        <p id="temp" class="text-2xl font-bold text-slate-800 mt-2">-- °C</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <span class="text-xs font-semibold text-slate-400">RAIN RATE</span>
+        <p id="rain" class="text-2xl font-bold text-blue-600 mt-2">-- mm/h</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <span class="text-xs font-semibold text-slate-400">WIND SPEED</span>
+        <p id="wind" class="text-2xl font-bold text-slate-800 mt-2">-- km/h</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <span class="text-xs font-semibold text-slate-400">HUMIDITY</span>
+        <p id="humidity" class="text-2xl font-bold text-slate-800 mt-2">-- %</p>
+      </div>
+    </section>
+
+    <!-- Road Conditions Table -->
+    <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+      <h2 class="text-lg font-bold text-slate-800">Road Passability Status</h2>
+      <div id="roads-container" class="divide-y divide-slate-100">
+        <p class="text-sm text-slate-400 py-2">Loading road conditions...</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    async function loadData() {
+      try {
+        // Fetch Live Weather
+        const wRes = await fetch('/api/weather');
+        const weather = await wRes.json();
+        
+        if (weather.success && weather.data) {
+          const d = weather.data;
+          document.getElementById('temp').innerText = `${d.temp_c ?? '--'} °C`;
+          document.getElementById('rain').innerText = `${d.rain_rate_mm ?? '0'} mm/h`;
+          document.getElementById('wind').innerText = `${d.wind_speed_kmh ?? '--'} km/h`;
+          document.getElementById('humidity').innerText = `${d.humidity ?? '--'} %`;
+        }
+
+        // Fetch Road Statuses
+        const rRes = await fetch('/api/roads');
+        const roads = await rRes.json();
+
+        if (roads.success && roads.data) {
+          const container = document.getElementById('roads-container');
+          container.innerHTML = roads.data.map(road => `
+            <div class="py-3 flex items-center justify-between">
+              <div>
+                <p class="font-semibold text-slate-800">${road.road_name}</p>
+                <p class="text-xs text-slate-500">${road.location_description || ''}</p>
+              </div>
+              <span class="px-3 py-1 rounded-full text-xs font-bold ${
+                road.status === 'PASSABLE' ? 'bg-emerald-100 text-emerald-700' :
+                road.status === 'CAUTION' ? 'bg-amber-100 text-amber-700' :
+                'bg-rose-100 text-rose-700'
+              }">
+                ${road.status}
+              </span>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        console.error('Failed to load portal data:', err);
+      }
+    }
+
+    loadData();
+    setInterval(loadData, 30000); // Auto-refresh every 30 seconds
+  </script>
+</body>
+</html>
