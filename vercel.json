@@ -6,7 +6,7 @@
   "crons": [
     {
       "path": "/api/cron/fetch-weather",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
